@@ -83,9 +83,10 @@ ENV HADOOP_HOME=${HADOOP_HOME:-"/opt/hadoop"}
 RUN mkdir -p ${HADOOP_HOME} && mkdir -p ${SPARK_HOME}
 WORKDIR ${SPARK_HOME}
 
-COPY ./spark-3.5.1-bin-hadoop3.gz .
-RUN tar xvzf spark-3.5.1-bin-hadoop3.gz --directory /opt/spark --strip-components 1 && \
-    rm spark-3.5.1-bin-hadoop3.gz
+RUN wget https://dlcdn.apache.org/spark/spark-3.5.1/spark-3.5.1-bin-hadoop3.tgz 
+# COPY ./spark-3.5.1-bin-hadoop3.tgz .
+RUN tar xvzf spark-3.5.1-bin-hadoop3.tgz --directory /opt/spark --strip-components 1 && \
+    rm spark-3.5.1-bin-hadoop3.tgz
 
 COPY ./requirements.txt .
 RUN pip3 install -r requirements.txt

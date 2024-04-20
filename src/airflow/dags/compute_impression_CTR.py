@@ -7,6 +7,13 @@ default_args = {
     'start_date': datetime(2024, 1, 1, 00, 00),
 }
 
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)  # Set the logging level to INFO
+
+import os
+logging.info(f"print pwd {os.getcwd()}")
 
 # Define Airflow DAG
 with DAG('sparksql_to_elasticsearch', 
@@ -15,7 +22,7 @@ with DAG('sparksql_to_elasticsearch',
     # Define PythonOperator to execute SparkSQL job
     submit_job = SparkSubmitOperator(
         task_id='submit_job',
-        application='../includes/pyspark.py',
+        application='/opt/airflow/spark_apps/pyspark_script.py',
         conn_id='spark_default',
         total_executor_cores='1',
         executor_cores='1',

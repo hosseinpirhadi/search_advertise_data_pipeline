@@ -1,4 +1,4 @@
-src/airflow/include/pyspark_script.py# Import necessary libraries
+# Import necessary libraries
 from pyspark.sql import SparkSession
     
 # Define the SparkSQL job
