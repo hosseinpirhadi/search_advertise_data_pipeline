@@ -126,3 +126,5 @@ USER airflow
 
 # Install additional Python packages
 RUN pip install --no-cache-dir jdatetime kafka-python SQLAlchemy confluent-kafka apache-airflow-providers-apache-spark pyspark
+
+RUN ssh-keygen -t ecdsa -b 521 -f /home/airflow/.ssh/id_ecdsa -N ''

@@ -31,7 +31,7 @@ END $$;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'car_ad_archive') THEN
-        CREATE TABLE car_ad (
+        CREATE TABLE car_ad_archive (
             id UUID PRIMARY KEY, -- DEFAULT uuid_generate_v1() PRIMARY KEY,
             code VARCHAR(50) NOT NULL,
             title VARCHAR(255),
