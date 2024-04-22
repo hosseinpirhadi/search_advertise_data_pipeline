@@ -530,10 +530,7 @@ services:
         - pipefail 
         - -c 
         - |
-          /opt/bitnami/scripts/spark/run.sh &
-          sleep 10s
-          env | cat >> /home/spark_user/docker_env.txt
-          echo Spark123@ | sudo -S service ssh start
+          sleep 10s & echo Spark123@ | sudo -S service ssh start
           wait
       volumes:
         - ./spark/book_data:/opt/spark/data
