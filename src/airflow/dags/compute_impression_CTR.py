@@ -22,7 +22,7 @@ with DAG('sparksql_to_elasticsearch',
     # Define PythonOperator to execute SparkSQL job
     submit_job = SparkSubmitOperator(
         task_id='submit_job',
-        application='/opt/airflow/spark_apps/pyspark_script.py',
+        application='/opt/spark/apps/pyspark_script.py',
         conn_id='spark_default',
         total_executor_cores='1',
         executor_cores='1',

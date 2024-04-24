@@ -42,5 +42,5 @@ with DAG('sparksql_to_elasticsearch_ssh',
     task = SSHOperator(
         task_id='submit_job',
         ssh_conn_id='ssh_spark',
-        command='sudo python /opt/spark/apps/pyspark_script.py',
+        command='python /opt/spark/apps/pyspark_script.py',
     )
