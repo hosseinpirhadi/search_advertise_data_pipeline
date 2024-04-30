@@ -83,8 +83,8 @@ ENV HADOOP_HOME=${HADOOP_HOME:-"/opt/hadoop"}
 RUN mkdir -p ${HADOOP_HOME} && mkdir -p ${SPARK_HOME}
 WORKDIR ${SPARK_HOME}
 
-RUN wget https://dlcdn.apache.org/spark/spark-3.5.1/spark-3.5.1-bin-hadoop3.tgz 
-# COPY ./spark-3.5.1-bin-hadoop3.tgz .
+# RUN wget https://dlcdn.apache.org/spark/spark-3.5.1/spark-3.5.1-bin-hadoop3.tgz 
+COPY ./spark-3.5.1-bin-hadoop3.tgz .
 RUN tar xvzf spark-3.5.1-bin-hadoop3.tgz --directory /opt/spark --strip-components 1 && \
     rm spark-3.5.1-bin-hadoop3.tgz
 
@@ -112,6 +112,7 @@ RUN echo spark_user:Spark123@ | chpasswd
 #adding spark_user to sudo group to start ssh from docker-compose
 RUN usermod -aG sudo spark_user
 
+CMD service ssh start
 
 ENTRYPOINT ["./entrypoint.sh"]
 

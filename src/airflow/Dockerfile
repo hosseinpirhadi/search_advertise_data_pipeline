@@ -92,7 +92,7 @@ USER root
 
 # Create the missing directory and set appropriate permissions
 RUN mkdir -p /var/lib/apt/lists/partial && \
-    chmod 644 /var/lib/apt/lists/partial  && \
+    chmod 755 /var/lib/apt/lists/partial  && \
     mkdir /usr/lib/jvm
     # mkdir /usr/bin/java && \
     # mkdir /usr/bin/java
@@ -106,13 +106,33 @@ RUN tar -xzf /tmp/openjdk-11.0.1_linux-x64_bin.tar.gz -C /usr/lib/jvm/ \
     && update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/jdk-11.0.1/bin/javac 1
 
 # Update package lists and upgrade installed packages
+# RUN apt-get update
+# RUN apt-get upgrade -y
+# RUN apt-get install -y --no-install-recommends build-essential
+# RUN apt-get install -y --no-install-recommends tzdata 
+#     # apt-get clean && \
+    # rm -rf /var/lib/apt/lists/*
+
+ENV ACCEPT_EULA=Y
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
         build-essential \
-        tzdata && \
+        tzdata \
+        msodbcsql18 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+
+# RUN ACCEPT_EULA=Y apt-get update && \
+#     apt-get upgrade -y && \
+#     apt-get install -y --no-install-recommends \
+        # build-essential \
+        # tzdata \
+        # msodbcsql18 && \
+    # apt-get clean && \
+    # rm -rf /var/lib/apt/lists/*
+
 
 # Set the timezone (example: Asia/Tehran)
 ENV TZ=Asia/Tehran
@@ -125,6 +145,6 @@ ENV JAVA_HOME='/usr/lib/jvm/jdk-11.0.1'
 USER airflow
 
 # Install additional Python packages
-RUN pip install --no-cache-dir jdatetime kafka-python SQLAlchemy confluent-kafka apache-airflow-providers-apache-spark pyspark
+RUN pip install jdatetime kafka-python SQLAlchemy confluent-kafka apache-airflow-providers-apache-spark pyspark
 
 RUN ssh-keygen -t ecdsa -b 521 -f /home/airflow/.ssh/id_ecdsa -N ''

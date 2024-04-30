@@ -16,7 +16,8 @@ BEGIN
         CREATE TABLE car_ad (
             id UUID PRIMARY KEY, -- DEFAULT uuid_generate_v1() PRIMARY KEY,
             code VARCHAR(50) NOT NULL,
-            title VARCHAR(255),
+            brand VARCHAR(255),
+            model VARCHAR(255),
             year VARCHAR(10),
             miles VARCHAR(50),
             date DATE,
@@ -34,7 +35,8 @@ BEGIN
         CREATE TABLE car_ad_archive (
             id UUID PRIMARY KEY, -- DEFAULT uuid_generate_v1() PRIMARY KEY,
             code VARCHAR(50) NOT NULL,
-            title VARCHAR(255),
+            brand VARCHAR(255),
+            model VARCHAR(255),
             year VARCHAR(10),
             miles VARCHAR(50),
             date DATE,

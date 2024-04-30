@@ -40,8 +40,8 @@ def insert_to_postgres(data):
         conn = psycopg2.connect(**pg_conn_params)
         cursor = conn.cursor()
         # Assuming your table structure and data format
-        cursor.execute("INSERT INTO car_ad (id, code, title, year, miles, date, price) VALUES (%s, %s, %s, %s, %s, %s, %s)", 
-                       (data['id'], data['code'], data['title'], data['year'], data['miles'], data['date'], data['price']))
+        cursor.execute("INSERT INTO car_ad (id, code, brand, model, year, miles, date, price) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", 
+                       (data['id'], data['code'], data['brand'], data['model'], data['year'], data['miles'], data['date'], data['price']))
         conn.commit()
         logger.info("Data inserted into PostgreSQL")
     except psycopg2.Error as e:

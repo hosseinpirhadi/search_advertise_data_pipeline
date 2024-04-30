@@ -33,9 +33,12 @@ def format_data(data):
     items = []
     for item in data['data']['ads']:
         if item.get('detail'):
+            
+            brand, model = item['detail'].get('title').split('،')
             formatted_item = {
                 'code' : item['detail'].get('code'),
-                'title': item['detail'].get('title'),
+                'brand': brand,
+                'model': model,
                 'year' : item['detail'].get('year'),
                 'miles': item['detail'].get('mileage'),
                 'date' : item['detail'].get('modified_date'),

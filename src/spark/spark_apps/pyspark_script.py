@@ -74,49 +74,207 @@
 #     spark_sql_job()
 
 ############## versoin three ################################
+# def spark_sql_job():
+#     from pyspark.sql import SparkSession
+
+#     spark = SparkSession.builder\
+#        .appName("PostgreSQL to Elasticsearch")\
+#        .config("spark.jars", "/opt/spark/data/postgresql-42.7.3.jar")\
+#        .config("spark.driver.extraClassPath", "/opt/spark/data/postgresql-42.7.3.jar")\
+#        .getOrCreate()
+
+#     df = spark.read \
+#      .format("jdbc") \
+#      .option("url", "jdbc:postgresql://postgres_store:5432/advertise") \
+#      .option("dbtable", "ad_interaction") \
+#      .option("user", "test") \
+#      .option("password", "test") \
+#      .load()
+
+#     # Register DataFrame as a temporary view
+#     df.createOrReplaceTempView("ad_interaction_view")
+
+#     # Define SQL query with filtering for last 6 hours
+#     sql_query = """
+#     SELECT 
+#         ad_id,
+#         SUM(CASE WHEN type = 'false' THEN 1 ELSE 0 END) AS clicks,
+#         COUNT(*) AS total_interactions,
+#         ROUND(SUM(CASE WHEN type = 'false' THEN 1.0 ELSE 0 END) / COUNT(*), 2) AS click_ratio
+#     FROM 
+#         ad_interaction_view
+#     GROUP BY 
+#         ad_id
+#     """
+
+#     # Execute SQL query
+#     result = spark.sql(sql_query)
+
+#     # Show the result
+#     result.show()
+
+#     spark.stop()
+
+#     # WHERE 
+#     #     created_at > CURRENT_TIMESTAMP() - INTERVAL '6 HOURS'
+    
+# if __name__ == '__main__':
+#     spark_sql_job()
+
+############### version #############################################
+
 def spark_sql_job():
     from pyspark.sql import SparkSession
 
     spark = SparkSession.builder\
        .appName("PostgreSQL to Elasticsearch")\
-       .config("spark.jars", "/opt/spark/data/postgresql-42.7.3.jar")\
-       .config("spark.driver.extraClassPath", "/opt/spark/data/postgresql-42.7.3.jar")\
+       .config("spark.jars.packages", "/opt/spark/data/postgresql-42.7.3.jar, /opt/spark/data/elasticsearch-spark-30_2.13-8.13.0.jar")\
+       .config("spark.driver.extraClassPath", "/opt/spark/data/postgresql-42.7.3.jar, /opt/spark/data/elasticsearch-spark-30_2.13-8.13.0.jar")\
        .getOrCreate()
 
-    df = spark.read \
-     .format("jdbc") \
-     .option("url", "jdbc:postgresql://postgres_store:5432/advertise") \
-     .option("dbtable", "ad_interaction") \
-     .option("user", "test") \
-     .option("password", "test") \
-     .load()
+    df_ad_interaction = spark.read \
+        .format("jdbc") \
+        .option("url", "jdbc:postgresql://postgres_store:5432/advertise") \
+        .option("dbtable", "ad_interaction") \
+        .option("user", "test") \
+        .option("password", "test") \
+        .load()
 
-    # Register DataFrame as a temporary view
-    df.createOrReplaceTempView("ad_interaction_view")
+    df_another_table = spark.read \
+        .format("jdbc") \
+        .option("url", "jdbc:postgresql://postgres_store:5432/advertise") \
+        .option("dbtable", "car_ad") \
+        .option("user", "test") \
+        .option("password", "test") \
+        .load()
 
-    # Define SQL query with filtering for last 6 hours
-    sql_query = """
+    # Register DataFrames as temporary views
+    df_ad_interaction.createOrReplaceTempView("ad_interaction")
+    df_another_table.createOrReplaceTempView("another_table")
+
+    # Define SQL query to compute click ratio
+    click_ratio_query = """
     SELECT 
         ad_id,
         SUM(CASE WHEN type = 'false' THEN 1 ELSE 0 END) AS clicks,
         COUNT(*) AS total_interactions,
         ROUND(SUM(CASE WHEN type = 'false' THEN 1.0 ELSE 0 END) / COUNT(*), 2) AS click_ratio
     FROM 
-        ad_interaction_view
-    WHERE 
-        created_at > CURRENT_TIMESTAMP() - INTERVAL 6 HOURS
+        ad_interaction
     GROUP BY 
         ad_id
     """
 
-    # Execute SQL query
-    result = spark.sql(sql_query)
+    # Execute SQL query to compute click ratio
+    click_ratio_df = spark.sql(click_ratio_query)
+
+    click_ratio_df.createOrReplaceTempView("click_ratio_view")
+
+    # Define SQL query to perform join with another table
+    join_query = """
+    SELECT 
+        c.ad_id,
+        c.clicks,
+        c.total_interactions,
+        c.click_ratio,
+        a.*
+    FROM 
+        click_ratio_view c
+    JOIN 
+        car_ad a
+    ON 
+        c.ad_id = a.id
+    """
+
+    # Execute SQL query to perform join
+    result = spark.sql(join_query)
 
     # Show the result
     result.show()
+
+    # Insert the result into Elasticsearch
+    # result.write.format("org.elasticsearch.spark.sql") \
+    #     .option("es.resource", "advert/your_type") \
+    #     .option("es.nodes", "elasticsearch") \
+    #     .save()
 
     spark.stop()
 
 if __name__ == '__main__':
     spark_sql_job()
 
+
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.appName("PostgreSQL to Elasticsearch").config("spark.jars.packages", "/opt/spark/data/postgresql-42.7.3.jar, /opt/spark/data/elasticsearch-spark-30_2.12-8.13.0.jar").config("spark.driver.extraClassPath", "/opt/spark/data/postgresql-42.7.3.jar, /opt/spark/data/elasticsearch-spark-30_2.12-8.13.0.jar").getOrCreate()
+
+df_ad_interaction = spark.read.format("jdbc").option("url", "jdbc:postgresql://postgres_store:5432/advertise").option("dbtable", "ad_interaction").option("user", "test").option("password", "test").load()
+
+df_another_table = spark.read.format("jdbc").option("url", "jdbc:postgresql://postgres_store:5432/advertise").option("dbtable", "car_ad").option("user", "test").option("password", "test").load()
+
+# Register DataFrames as temporary views
+df_ad_interaction.createOrReplaceTempView("ad_interaction")
+df_another_table.createOrReplaceTempView("car_ad")
+
+# Define SQL query to compute click ratio
+click_ratio_query = """
+SELECT 
+ad_id,
+SUM(CASE WHEN type = 'false' THEN 1 ELSE 0 END) AS clicks,
+COUNT(*) AS total_interactions,
+ROUND(SUM(CASE WHEN type = 'false' THEN 1.0 ELSE 0 END) / COUNT(*), 2) AS click_ratio
+FROM 
+ad_interaction
+GROUP BY 
+ad_id
+"""
+
+# Execute SQL query to compute click ratio
+click_ratio_df = spark.sql(click_ratio_query)
+
+click_ratio_df.createOrReplaceTempView("click_ratio_view")
+
+# Define SQL query to perform join with another table
+join_query = """
+SELECT 
+c.ad_id,
+c.clicks,
+c.total_interactions,
+c.click_ratio,
+a.*
+FROM 
+click_ratio_view c
+JOIN 
+car_ad a
+ON 
+c.ad_id = a.id
+"""
+
+# Execute SQL query to perform join
+result = spark.sql(join_query)
+
+# Show the result
+result.show()
+
+# Insert the result into Elasticsearch
+spark.read("org.elasticsearch.spark.sql") \
+    .option("es.nodes", "elasticsearch:9200")\
+    .option("es.nodes.discovery", "false")\
+    .option("es.nodes.wan.only", "true")\
+    .option("es.index.auto.create", "true")\
+    .load('advert')
+
+spark.stop()
+
+myspark = SparkSession.builder.appName("My test.").master("spark://spark-master:7077").config("es.nodes", "elasticsearch").config("es.port", "9200").getOrCreate()
+
+spark = SparkSession.builder.appName("PostgreSQL to Elasticsearch").config("spark.jars.packages", "/opt/spark/data/elasticsearch-spark-30_2.13-8.13.0.jar").getOrCreate()
+
+spark = SparkSession.builder.appName("PostgreSQL to Elasticsearch").config("spark.jars.packages", "org.postgresql:postgresql:42.7.3,org.elasticsearch:elasticsearch-spark-30_2.12:8.13.0").config("spark.driver.extraClassPath", "/opt/spark/data/postgresql-42.7.3.jar, /opt/spark/data/elasticsearch-spark-30_2.12-8.13.0.jar").getOrCreate()
+# Write the result DataFrame to Elasticsearch
+result.write.format("es") \
+    .option("es.resource", "index-name") \
+    .option("es.nodes", "elasticsearch:9200") \
+    .option("es.nodes.wan.only", "true") \
+    .option("es.index.auto.create", "true") \
+    .save()
