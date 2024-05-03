@@ -112,7 +112,11 @@ RUN echo spark_user:Spark123@ | chpasswd
 #adding spark_user to sudo group to start ssh from docker-compose
 RUN usermod -aG sudo spark_user
 
-CMD service ssh start
+RUN service ssh start
+
+EXPOSE 22
+
+CMD ["/usr/sbin/sshd","-D"]
 
 ENTRYPOINT ["./entrypoint.sh"]
 

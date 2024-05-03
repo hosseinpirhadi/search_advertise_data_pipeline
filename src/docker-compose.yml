@@ -28,6 +28,7 @@ x-airflow-common:
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     POSTGRES_PASSWORD: 'postgres'
   volumes:
+    - ${AIRFLOW_PROJ_DIR:-.}/ssh-setup:/ssh-setup
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
@@ -108,12 +109,12 @@ services:
       retries: 5
       start_period: 30s
     restart: always
-    command: bash -c "./airflow/ssh-setup/setup_ssh.sh && scheduler"
+    command: "scheduler & /ssh-setup/setup_ssh.sh"
+    # entrypoint: ["/ssh-setup/setup_ssh.sh"]
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
-
 
   airflow-worker:
     <<: *airflow-common
@@ -434,7 +435,7 @@ services:
   elasticsearch-setup:
     image: appropriate/curl
     command: >
-      sh -c 'sleep 60 && curl -XPUT "http://elasticsearch:9200/advert" -H "Content-Type: application/json" -d "{\"mappings\":{\"properties\":{\"ad_id\":{\"type\":\"keyword\"},\"clicks\":{\"type\":\"integer\"},\"total_interactions\":{\"type\":\"integer\"},\"click_ratio\":{\"type\":\"float\"},\"id\":{\"type\":\"keyword\"},\"code\":{\"type\":\"keyword\"},\"title\":{\"type\":\"text\"},\"year\":{\"type\":\"integer\"},\"miles\":{\"type\":\"text\"},\"date\":{\"type\":\"date\",\"format\":\"yyyy-MM-dd\"},\"price\":{\"type\":\"float\"}}}}"'
+      sh -c 'sleep 60 && curl -XPUT "http://elasticsearch:9200/advert" -H "Content-Type: application/json" -d "{\"mappings\":{\"properties\":{\"ad_id\":{\"type\":\"keyword\"},\"clicks\":{\"type\":\"integer\"},\"total_interactions\":{\"type\":\"integer\"},\"click_ratio\":{\"type\":\"float\"},\"id\":{\"type\":\"keyword\"},\"code\":{\"type\":\"keyword\"},\"title\":{\"type\":\"text\"},\"year\":{\"type\":\"integer\"},\"miles\":{\"type\":\"text\"},\"date\":{\"type\":\"date\",\"format\":\"yyyy-MM-dd\"},\"price\":{\"type\":\"text\"}}}}"'
     depends_on:
       - elasticsearch
     networks:
@@ -513,8 +514,8 @@ services:
         - spark-master
       env_file:
         - ./spark/.env.spark
-      command: 
-          - sleep 40s & echo Spark123@ | sudo -S service ssh start
+      # command: 
+      #     - sleep 40s & echo Spark123@ | sudo -S service ssh start
       volumes:
         - ./spark/book_data:/opt/spark/data
         - ./spark/spark_apps:/opt/spark/apps
@@ -529,9 +530,14 @@ services:
       - "3000:3000"
     volumes:
       - grafana_storage:/var/lib/grafana
+      - ./provisioning:/etc/grafana/provisioning
+      - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./provisioning/datasources:/etc/grafana/provisioning/datasources
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=securepassword  # Change 'securepassword' to a password of your choice
+      - GF_SECURITY_ADMIN_PASSWORD=test  # Change 'securepassword' to a password of your choice
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_DATASOURCE_PROXY_ENABLED=true
     networks:
       - services
 
@@ -541,7 +547,7 @@ volumes:
   spark-logs:
   grafana_storage:
 
-networks:
+networks: 
   services:
     name: service_network
     driver: bridge

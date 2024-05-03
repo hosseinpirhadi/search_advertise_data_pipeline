@@ -9,6 +9,7 @@ then
   start-master.sh -p 7077
 elif [ "$SPARK_WORKLOAD" == "worker" ];
 then
+  sudo service ssh start
   start-worker.sh spark://spark-master:7077
 elif [ "$SPARK_WORKLOAD" == "history" ]
 then

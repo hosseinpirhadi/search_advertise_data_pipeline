@@ -121,7 +121,7 @@ RUN apt-get update && \
         tzdata \
         msodbcsql18 && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* 
 
 
 # RUN ACCEPT_EULA=Y apt-get update && \
@@ -141,10 +141,13 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 # Set Java Directory
 ENV JAVA_HOME='/usr/lib/jvm/jdk-11.0.1'
 
+RUN apt-get update && \
+    apt-get install sshpass -y --no-install-recommends
 # Switch back to the `airflow` user
 USER airflow
 
 # Install additional Python packages
-RUN pip install jdatetime kafka-python SQLAlchemy confluent-kafka apache-airflow-providers-apache-spark pyspark
+RUN pip install --no-cache-dir jdatetime kafka-python SQLAlchemy confluent-kafka apache-airflow-providers-apache-spark pyspark
+
 
 RUN ssh-keygen -t ecdsa -b 521 -f /home/airflow/.ssh/id_ecdsa -N ''
