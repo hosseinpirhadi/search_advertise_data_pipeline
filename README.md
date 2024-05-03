@@ -67,3 +67,40 @@ Operational Guide
 2. **Shutting Down Containers:**
    ```bash
    docker compose down --volumes --remove-orphans
+
+
+Operational Guide
+
+1. Initiate Airflow:
+   - Access the Airflow interface at http://localhost:8080.
+   - Start the initial data collection DAG.
+
+2. Monitoring Tools:
+   - Kafka: Monitor the flow through topics.
+   - PostgreSQL: Check data storage.
+   - Elasticsearch: Ensure data is indexed correctly.
+   - Grafana: View dashboards at http://localhost:3000.
+
+After Project Setup
+
+Configure an SSH connection in Airflow for Spark tasks:
+
+1. Go to the Airflow web interface.
+2. From the navbar, select Admin and click on Connections.
+3. On the next page, click the + button to create a new connection.
+4. Fill in the connection details as follows:
+   - Connection Id: ssh_spark
+   - Connection Type: SSH
+   - Host: da-spark-worker
+   - Username: spark_user
+   - Extra: {"key_file": "/home/airflow/.ssh/id_ecdsa"}
+5. Save the changes.
+
+Set up the Grafana dashboard:
+
+1. Go to the Grafana web interface and log in.
+2. Click on Dashboards, then select the New button.
+3. Click on Import.
+4. From the project folder, navigate to the provisioning/dashboards directory.
+5. Select the 'Advertise Dashboard' file to import.
+
