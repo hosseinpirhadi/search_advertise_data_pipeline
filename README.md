@@ -104,3 +104,4 @@ Set up the Grafana dashboard:
 4. From the project folder, navigate to the provisioning/dashboards directory.
 5. Select the 'Advertise Dashboard' file to import.
 
+![Project Architecture](src/pipeline.png)
