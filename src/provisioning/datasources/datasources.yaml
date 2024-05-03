@@ -1,0 +1,14 @@
+apiVersion: 1
+
+datasources:
+  - name: Postgres
+    type: postgres
+    url: postgres_store:5432
+    user: test
+    uid: fdkl740yydzpcb
+    secureJsonData:
+      password: 'test'
+    jsonData:
+      database: advertise
+      sslmode: 'disable'
+      postgresVersion: 1300
